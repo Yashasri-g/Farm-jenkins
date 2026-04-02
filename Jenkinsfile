@@ -35,7 +35,7 @@ pipeline {
             steps {
                 sshagent(['ec2-ssh-key']) {
                     sh '''
-                    ssh -o StrictHostKeyChecking=no ec2-user@$EC2 "
+                    ssh -o StrictHostKeyChecking=no ubuntu@$EC2 "
                         docker pull $IMAGE:$TAG &&
                         docker stop $CONTAINER || true &&
                         docker rm $CONTAINER || true &&
