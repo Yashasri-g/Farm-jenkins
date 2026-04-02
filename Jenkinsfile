@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        IMAGE = "yourdockerhub/app"
+        IMAGE = "7396444674/app"
         TAG = "${BUILD_NUMBER}"
         CONTAINER = "my-app"
-        EC2 = "your-ec2-ip"
+        EC2 = "13.204.95.170"
     }
 
     stages {
