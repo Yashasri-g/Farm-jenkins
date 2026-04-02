@@ -34,14 +34,14 @@ pipeline {
         stage('Deploy') {
             steps {
                 sshagent(['ec2-ssh-key']) {
-                    sh """
-                    ssh -o StrictHostKeyChecking=no ec2-user@$EC2 '
+                    sh '''
+                    ssh -o StrictHostKeyChecking=no ec2-user@$EC2 "
                         docker pull $IMAGE:$TAG &&
                         docker stop $CONTAINER || true &&
                         docker rm $CONTAINER || true &&
-                        docker run -d -p 80:80 --name $CONTAINER $IMAGE:$TAG
-                    '
-                    """
+                        docker run -d -p 80:8000 --name $CONTAINER $IMAGE:$TAG
+                    "
+                    '''
                 }
             }
         }
