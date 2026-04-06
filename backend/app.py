@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from models import BlogPost
-from database import post_collection
+from bakcend.models import BlogPost
+from backend.database import post_collection
 from bson import ObjectId
 from fastapi.exceptions import HTTPException
 
