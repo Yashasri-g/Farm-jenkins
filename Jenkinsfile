@@ -37,24 +37,25 @@ pipeline {
         }
 
         stage('Deploy') {
-            steps {
-                withCredentials([string(credentialsId: 'MONGO_URI', variable: 'MONGO_URI')]) {
-                    sshagent(['ec2-ssh-key']) {
-                        sh '''
-                            ssh -o StrictHostKeyChecking=no ubuntu@$EC2 "
+    steps {
+        withCredentials([string(credentialsId: 'MONGO_URI', variable: 'MONGO_URI')]) {
+            sshagent(['ec2-ssh-key']) {
+                sh '''
+                    ssh -o StrictHostKeyChecking=no ubuntu@$EC2 "
 
-                                export TAG=$TAG
-                                export MONGO_URI='$MONGO_URI'
+                        export TAG=$TAG
+                        export MONGO_URI=$MONGO_URI
 
-                                # install docker-compose if not exists
-                                sudo apt-get update -y
-                                sudo apt-get install -y docker-compose
+                        # install docker-compose if not exists
+                        sudo apt-get update -y
+                        sudo apt-get install -y docker-compose
 
-                                # go to app directory (IMPORTANT)
-                                cd ~/app || mkdir ~/app && cd ~/app
+                        # go to app directory
+                        mkdir -p ~/app
+                        cd ~/app
 
-                                # create docker-compose.yml
-                                cat > docker-compose.yml << 'EOF'
+                        # create docker-compose.yml
+                        cat > docker-compose.yml << EOF
 version: "3.9"
 services:
   backend:
@@ -62,7 +63,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - MONGO_URI=${MONGO_URI}
+      - MONGO_URI="${MONGO_URI}"
     depends_on:
       - mongodb
     restart: unless-stopped
@@ -87,14 +88,12 @@ volumes:
   mongo_data:
 EOF
 
-                                docker-compose down || true
-                                docker-compose pull
-                                docker-compose up -d
+                        docker-compose down || true
+                        docker-compose pull
+                        docker-compose up -d
 
-                            "
-                        '''
-                    }
-                }
+                    "
+                '''
             }
         }
     }
