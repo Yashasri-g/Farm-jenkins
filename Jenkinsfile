@@ -46,15 +46,13 @@ pipeline {
                         export TAG=$TAG
                         export MONGO_URI=$MONGO_URI
 
-                        # install docker-compose if not exists
+                        # install docker compose (v2)
                         sudo apt-get update -y
-                        sudo apt-get install -y docker-compose
+                        sudo apt-get install -y docker-compose-plugin
 
-                        # go to app directory
                         mkdir -p ~/app
                         cd ~/app
 
-                        # create docker-compose.yml
                         cat > docker-compose.yml << EOF
 version: "3.9"
 services:
@@ -88,9 +86,9 @@ volumes:
   mongo_data:
 EOF
 
-                        docker-compose down || true
-                        docker-compose pull
-                        docker-compose up -d
+                        docker compose down || true
+                        docker compose pull
+                        docker compose up -d
 
                     "
                 '''
