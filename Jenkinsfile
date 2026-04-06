@@ -6,15 +6,18 @@ pipeline {
         TAG = "${BUILD_NUMBER}"
         EC2 = "13.204.95.170"
     }
-    stages {
-        stage('Build') {
-            steps {
-                sh '''
-                    docker build -t $BACKEND_IMAGE:$TAG -f Dockerfile .
-                    docker build -t $FRONTEND_IMAGE:$TAG -f frontend/Dockerfile ./frontend
-                '''
-            }
-        }
+    stage('Build') {
+    steps {
+        sh '''
+            docker build -t $BACKEND_IMAGE:$TAG -f Dockerfile .
+            docker build \
+                --build-arg REACT_APP_API_URL=http://13.204.95.170:8000 \
+                -t $FRONTEND_IMAGE:$TAG \
+                -f frontend/Dockerfile ./frontend
+        '''
+    }
+}
+            
         stage('Push') {
             steps {
                 withCredentials([
