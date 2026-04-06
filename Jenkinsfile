@@ -75,9 +75,10 @@ volumes:
   mongo_data:
 EOF
                                 docker-compose down || true
+                                docker-compose down --remove-orphans || true
                                 docker-compose pull
                                 docker-compose up -d
-                                docker-compose down --remove-orphans || true
+                                
                             '
                         """
                     }
