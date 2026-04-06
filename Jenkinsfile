@@ -9,27 +9,28 @@ pipeline {
     }
 
     stages {
-
         stage('Build') {
             steps {
                 sh '''
-                docker build -t $BACKEND_IMAGE:$TAG -f Dockerfile .
-                docker build -t $FRONTEND_IMAGE:$TAG -f frontend/Dockerfile ./frontend
+                    docker build -t $BACKEND_IMAGE:$TAG -f Dockerfile .
+                    docker build -t $FRONTEND_IMAGE:$TAG -f frontend/Dockerfile ./frontend
                 '''
             }
         }
 
         stage('Push') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
                     sh '''
-                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                    docker push $BACKEND_IMAGE:$TAG
-                    docker push $FRONTEND_IMAGE:$TAG
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker push $BACKEND_IMAGE:$TAG
+                        docker push $FRONTEND_IMAGE:$TAG
                     '''
                 }
             }
@@ -40,20 +41,20 @@ pipeline {
                 withCredentials([string(credentialsId: 'MONGO_URI', variable: 'MONGO_URI')]) {
                     sshagent(['ec2-ssh-key']) {
                         sh '''
-                        ssh -o StrictHostKeyChecking=no ubuntu@$EC2 "
+                            ssh -o StrictHostKeyChecking=no ubuntu@$EC2 "
 
-                            export TAG=$TAG
-                            export MONGO_URI='$MONGO_URI'
+                                export TAG=$TAG
+                                export MONGO_URI='$MONGO_URI'
 
-                            # install docker-compose if not exists
-                            sudo apt-get update -y
-                            sudo apt-get install -y docker-compose
+                                # install docker-compose if not exists
+                                sudo apt-get update -y
+                                sudo apt-get install -y docker-compose
 
-                            # go to app directory (IMPORTANT)
-                            cd ~/app || mkdir ~/app && cd ~/app
+                                # go to app directory (IMPORTANT)
+                                cd ~/app || mkdir ~/app && cd ~/app
 
-                            # create docker-compose.yml
-                            cat > docker-compose.yml << 'EOF'
+                                # create docker-compose.yml
+                                cat > docker-compose.yml << 'EOF'
 version: "3.9"
 services:
   backend:
@@ -86,11 +87,11 @@ volumes:
   mongo_data:
 EOF
 
-                            docker-compose down || true
-                            docker-compose pull
-                            docker-compose up -d
+                                docker-compose down || true
+                                docker-compose pull
+                                docker-compose up -d
 
-                        "
+                            "
                         '''
                     }
                 }
