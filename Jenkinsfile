@@ -19,12 +19,12 @@ pipeline {
         stage('Push') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'USER',
-                    passwordVariable: 'PASS'
+                    credentialsId: 'docker-hub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh '''
-                    echo $PASS | docker login -u $USER --password-stdin
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
                     docker push $IMAGE:$TAG
                     '''
                 }
@@ -33,15 +33,21 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sshagent(['ec2-ssh-key']) {
-                    sh '''
-                    ssh -o StrictHostKeyChecking=no ubuntu@$EC2 "
-                        docker pull $IMAGE:$TAG &&
-                        docker stop $CONTAINER || true &&
-                        docker rm $CONTAINER || true &&
-                        docker run -d -p 80:8000 --name $CONTAINER $IMAGE:$TAG
-                    "
-                    '''
+                withCredentials([string(credentialsId: 'MONGO_URI', variable: 'MONGO_URI')]) {
+                    sshagent(['ec2-ssh-key']) {
+                        sh '''
+                        ssh -o StrictHostKeyChecking=no ubuntu@$EC2 "
+                            docker pull $IMAGE:$TAG &&
+                            docker stop $CONTAINER || true &&
+                            docker rm $CONTAINER || true &&
+                            docker run -d \
+                                -p 80:8000 \
+                                -e MONGO_URI='$MONGO_URI' \
+                                --name $CONTAINER \
+                                $IMAGE:$TAG
+                        "
+                        '''
+                    }
                 }
             }
         }
